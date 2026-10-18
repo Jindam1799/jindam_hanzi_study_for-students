@@ -2,13 +2,22 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.4.4";
+var APP_VERSION = "1.5.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
   J.version = APP_VERSION;
   J.KAKAO_LINK = "http://pf.kakao.com/_jZYxmxj"; // 카카오톡 채널 채팅 바로가기
   J.PHONE = "01031917524"; // 전화 문의
+  J.REVIEW_LINK = "https://litt.ly/quanlaoshi1799"; // 후기 보러가기
+  // 진담중국어 소개글 (안내 팝업 아래)
+  J.ABOUT_HTML = '<div class="about">' +
+    '<div class="about__head">🌱 한자어로 넓히는 어휘력,<br>중국어로 키우는 소통의 힘!</div>' +
+    '<p>한자 한 글자에서 시작해<br>우리말 어휘력을 넓히고,<br>중국어로 세상과 소통하는 힘까지!</p>' +
+    '<p>쉽게 접하고, 재미있게 반복하고,<br>배운 것은 내 것으로!</p>' +
+    '<p>진담중국어는 즐겁게 배우고 반복하며<br>자연스럽게 익힐 수 있도록<br>다양한 학습게임을 직접 개발하여 제공합니다.</p>' +
+    '<div class="about__sign">진담중국어 | 아웃풋에 진심</div>' +
+    "</div>";
   J.PHONE_BTN = '<button class="phone-btn" type="button" data-phone>📞 전화 문의</button>';
   J.KAKAO_CHAT = '<a class="kakao-btn kakao-btn--chat" href="http://pf.kakao.com/_jZYxmxj" target="_blank" rel="noopener">💬 카톡 채팅 바로가기</a>';
   J.weeks = [];
@@ -410,8 +419,10 @@ var APP_VERSION = "1.4.4";
       '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
       '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
       '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
-      '<div class="contact"><div class="contact__btns">' + J.PHONE_BTN + J.KAKAO_CHAT.replace("카톡 채팅 바로가기", "카톡 문의") + "</div></div>" +
-      "</div>";
+      '<div class="contact"><div class="contact__btns">' + J.PHONE_BTN + J.KAKAO_CHAT.replace("카톡 채팅 바로가기", "카톡 문의") + "</div>" +
+        '<a class="review-btn" href="' + J.REVIEW_LINK + '" target="_blank" rel="noopener">⭐ 후기 보러가기</a></div>' +
+      "</div>" +
+      J.ABOUT_HTML;
   };
   J.showNotice = function (then, label) {
     var m = J.modal(J.noticeHTML() + '<button class="btn btn--red guide__go" type="button">' + (label || "확인") + "</button>", { onClose: then, noClose: !!then });
