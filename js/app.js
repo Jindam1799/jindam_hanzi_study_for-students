@@ -2,11 +2,13 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.3.0";
+var APP_VERSION = "1.4.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
   J.version = APP_VERSION;
+  J.KAKAO_LINK = "http://pf.kakao.com/_jZYxmxj"; // 카카오톡 채널 채팅 바로가기
+  J.KAKAO_CHAT = '<a class="kakao-btn kakao-btn--chat" href="http://pf.kakao.com/_jZYxmxj" target="_blank" rel="noopener">💬 카톡 채팅 바로가기</a>';
   J.weeks = [];
   J.screens = {};
   J.addWeek = function (w) {
@@ -407,7 +409,7 @@ var APP_VERSION = "1.3.0";
       '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
       '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
       '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
-      '<div class="promo__contact"><span class="promo__tag">문의처</span><button class="kakao-btn" type="button" data-kakao>💬 카톡 jindam1799</button></div>' +
+      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
       "</div>";
   };
   J.showNotice = function (then, label) {
@@ -421,7 +423,7 @@ var APP_VERSION = "1.3.0";
       '<div class="promo__eyebrow">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회</div>' +
       "<h2>&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></h2>" +
       '<div class="promo__courses"><span>초등과정 (저학년 / 고학년)</span><span>중·고등과정</span><span>HSK + 스피킹 과정</span></div>' +
-      '<div class="promo__contact"><span class="promo__tag">문의처</span><button class="kakao-btn" type="button" data-kakao>💬 카톡 jindam1799</button></div>' +
+      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
       '<div class="promo__brand">진담중국어 · 진심을 담은 중국어</div>' +
       "</div>";
   };
@@ -454,7 +456,7 @@ var APP_VERSION = "1.3.0";
           o.review.map(function (w) { return "<span><b class=\"hanja\">" + J.esc(w.hanja) + "</b> " + J.esc(w.hangul) + "</span>"; }).join("") + "</div>" : "") +
         '<div class="result__mission">' + (first ? "미션 " + idx + " 도장 쾅! " : "") + (left ? "남은 미션 " + left + "개" : "🏅 이번 주 미션을 모두 끝냈어요!") + "</div>" +
         '<div class="row row--center"><button class="btn" data-again>한 번 더</button><button class="btn btn--red" data-home>' + (first ? "도장 보러 가기 ▶" : "미션판으로") + "</button></div>" +
-        '<div class="result__promo">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회<br><b>&lt;한자어로 시작하는 중국어 과정&gt; 모집</b> &nbsp;<button class="kakao-btn" type="button" data-kakao>💬 jindam1799</button></div>' +
+        '<div class="result__promo">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회<br><b>&lt;한자어로 시작하는 중국어 과정&gt; 모집</b> &nbsp;' + J.KAKAO_CHAT + '</div>' +
       "</div>";
     J.$("[data-again]", root).addEventListener("click", function () { J.go(o.game); });
     J.$("[data-home]", root).addEventListener("click", function () { J.go("home"); });

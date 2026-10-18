@@ -616,4 +616,9 @@ body {
 .opt__hanja { font-size: clamp(28px, 7.5vw, 40px); line-height: 1.1; }
 .opt.gone { opacity: .18; pointer-events: none; transform: scale(.96); transition: opacity .3s, transform .3s; }
 
-.fcard__logo { font-family: var(--font-fun); font-weight: 400; font-size: clamp(17px, 4.6vw, 26px); line-height: 1.15; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.15); }
+.fcard__logo { font-family: var(--font-fun); font-weight: 400; font-size: clamp(24px, 6.4vw, 38px); line-height: 1.15; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.15); }
+
+a.kakao-btn { text-decoration: none; }
+.promo__contact { flex-wrap: wrap; }
+.kakao-id { font-size: 13px; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.14); color: inherit; }
+.result__promo .kakao-btn, .footer .kakao-btn { white-space: nowrap; }

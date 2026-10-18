@@ -65,7 +65,7 @@
       '<div class="flip">' +
         '<div class="row"><span class="pill">🃏 한자 ↔ 우리말 짝 찾기</span><span class="grow"></span><span class="pill" data-moves>0번 뒤집음</span></div>' +
         '<div class="flip__grid">' + cards.map(function (c, k) {
-          return '<button class="fcard" data-k="' + k + '"><div class="fcard__in"><div class="fcard__face fcard__back"><span class="fcard__logo">진담<br>중국어</span></div><div class="fcard__face fcard__front">' + c.html + "</div></div></button>";
+          return '<button class="fcard" data-k="' + k + '"><div class="fcard__in"><div class="fcard__face fcard__back"><span class="fcard__logo">진담</span></div><div class="fcard__face fcard__front">' + c.html + "</div></div></button>";
         }).join("") + "</div>" +
         '<div class="muted" style="text-align:center;font-size:14px" data-msg>👀 카드 자리를 잘 기억하세요!</div>' +
       "</div>";
