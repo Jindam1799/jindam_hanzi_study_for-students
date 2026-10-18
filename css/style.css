@@ -685,3 +685,6 @@ a.btn { text-decoration: none; }
 .teacher__group li::before { content: "◆"; position: absolute; left: 0; top: 1px; font-size: 9px; color: #E08A1E; }
 .teacher__group li small { display: block; font-size: 12px; color: #A2541B; }
 .teacher__name b { word-break: keep-all; font-size: clamp(21px, 6vw, 26px); }
+
+.notice-pop__one { white-space: nowrap; font-size: clamp(16px, 4.7vw, 23px); letter-spacing: -.02em; }
+.contact__btns .phone-btn, .contact__btns .kakao-btn { white-space: nowrap; font-size: clamp(14px, 4.2vw, 17px); padding: 10px 6px; }

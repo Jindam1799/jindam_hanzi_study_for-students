@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.7.0";
+var APP_VERSION = "1.7.1";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -449,7 +449,7 @@ var APP_VERSION = "1.7.0";
       '<div class="notice-pop">' +
         '<div class="notice-pop__tag">📢 중국어 과정 모집</div>' +
         '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
-        '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
+        '<div class="notice-pop__title notice-pop__one">&lt;한자어로 시작하는 중국어 과정&gt;</div>' +
         '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
         '<div class="contact"><div class="contact__btns">' + J.PHONE_BTN + J.KAKAO_CHAT.replace("카톡 채팅 바로가기", "카톡 문의") + "</div>" +
           '<a class="review-btn" href="' + J.REVIEW_LINK + '" target="_blank" rel="noopener">⭐ 후기 보러가기</a></div>' +
