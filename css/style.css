@@ -669,3 +669,19 @@ a.btn { text-decoration: none; }
 .notice-pop .review-btn { background: #fff; color: var(--red); box-shadow: 0 2px 0 rgba(160, 110, 20, .15); }
 .notice-pop .contact__btns .phone-btn, .notice-pop .contact__btns .kakao-btn { box-shadow: 0 2px 0 rgba(160, 110, 20, .15); }
 .notice-pop__title, .notice-pop__lead { word-break: keep-all; }
+
+/* 안내 팝업 1쪽: 진아선생님 소개 */
+.teacher__top { display: flex; align-items: center; gap: 14px; }
+.teacher__photo { width: 108px; height: 124px; object-fit: cover; object-position: center 20%; border-radius: 22px; border: 4px solid #fff; box-shadow: 0 4px 0 rgba(160, 110, 20, .18); flex: none; }
+.teacher__name { display: flex; flex-direction: column; gap: 2px; }
+.teacher__name small { font-size: 13px; color: #A2541B; }
+.teacher__name b { font-family: var(--font-fun); font-weight: 400; font-size: 26px; color: #3E2E0C; line-height: 1.15; }
+.teacher__name span { align-self: flex-start; background: var(--red); color: #fff; border-radius: 999px; padding: 2px 10px; font-size: 13px; font-family: var(--font-fun); margin-top: 4px; }
+.teacher__group { background: rgba(255, 255, 255, .7); border-radius: 14px; padding: 10px 12px; }
+.teacher__label { display: inline-block; font-family: var(--font-fun); font-size: 14px; color: #A2541B; margin-bottom: 4px; }
+.teacher__label.now { color: var(--red); }
+.teacher__group ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.teacher__group li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.45; color: #5B4310; word-break: keep-all; }
+.teacher__group li::before { content: "◆"; position: absolute; left: 0; top: 1px; font-size: 9px; color: #E08A1E; }
+.teacher__group li small { display: block; font-size: 12px; color: #A2541B; }
+.teacher__name b { word-break: keep-all; font-size: clamp(21px, 6vw, 26px); }

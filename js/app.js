@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.6.1";
+var APP_VERSION = "1.7.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -411,7 +411,33 @@ var APP_VERSION = "1.6.1";
   /* 모집 안내 팝업 */
   /* 진담중국어 안내 팝업: 1쪽 소개글, 2쪽 중국어 과정 모집 */
   J.noticePages = function () {
+    var li = function (arr) { return arr.map(function (t) { return "<li>" + t + "</li>"; }).join(""); };
     return [
+      '<div class="notice-pop teacher">' +
+        '<div class="notice-pop__tag">👩‍🏫 진아선생님을 소개해요</div>' +
+        '<div class="teacher__top">' +
+          '<img class="teacher__photo" src="assets/teacher.jpg?v=' + APP_VERSION + '" alt="전진아 선생님">' +
+          '<div class="teacher__name"><small>진담중국어</small><b>전진아 선생님</b><span>중국어 스피킹 전문</span></div>' +
+        "</div>" +
+        '<div class="teacher__group"><span class="teacher__label now">现 지금</span><ul>' + li([
+          "중국어스피킹 전문",
+          "진심이 담긴 '진담중국어' 운영",
+          "한중언어문화교류회(中韩交流会) 운영"
+        ]) + "</ul></div>" +
+        '<div class="teacher__group"><span class="teacher__label">前 경력</span><ul>' + li([
+          "중국 교육부 파견강사",
+          "공자아카데미 HSK 강사",
+          "공자아카데미 HSK 강사양성과정 강의",
+          "느린학습자를 위한 서울 대안학교(청년행복학교별) 중국어 교육봉사",
+          "웨이팡한셩국제학교 HSK 강의",
+          "중고등&amp;대학교&amp;한국은행 등 출강"
+        ]) + "</ul></div>" +
+        '<div class="teacher__group"><span class="teacher__label">자격 · 학력</span><ul>' + li([
+          "국제 중국어 교사 자격증(CTCSOL) 有",
+          "북경 외국어대학교 국제한어교육전공 석사졸업<small>(중국 정부 전액 장학금)</small>",
+          "북경 수도사범대학교 대외한어전공(경제무역방향) 학사졸업<small>(북경시 전액 장학금)</small>"
+        ]) + "</ul></div>" +
+      "</div>",
       '<div class="notice-pop">' +
         '<div class="notice-pop__tag">📢 진담중국어 안내</div>' +
         '<div class="notice-pop__title">🌱 한자어로 넓히는 어휘력,<br>중국어로 키우는 <em>소통의 힘!</em></div>' +
