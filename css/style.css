@@ -655,3 +655,17 @@ a.btn { text-decoration: none; }
 .nnav { display: flex; gap: 8px; }
 .nnav .btn { flex: none; }
 .nnav .guide__go { flex: 1; width: auto; }
+
+/* 안내 팝업: 따뜻한 파스텔 노랑 */
+.notice-pop { background: #FFF3CF; color: #5B4310; border: 2px solid #F6DE9A; }
+.notice-pop__tag { background: var(--red); color: #fff; }
+.notice-pop__lead { color: #C0601E; }
+.notice-pop__title { color: #3E2E0C; }
+.notice-pop__title em { color: var(--red); }
+.notice-pop__list li { background: rgba(255, 255, 255, .7); color: #5B4310; }
+.notice-pop__list li::before { color: #E08A1E; }
+.notice-pop__p { color: #5B4310; opacity: 1; }
+.notice-pop__sign { color: #A2541B; border-top: 2px dashed #F0D58C; }
+.notice-pop .review-btn { background: #fff; color: var(--red); box-shadow: 0 2px 0 rgba(160, 110, 20, .15); }
+.notice-pop .contact__btns .phone-btn, .notice-pop .contact__btns .kakao-btn { box-shadow: 0 2px 0 rgba(160, 110, 20, .15); }
+.notice-pop__title, .notice-pop__lead { word-break: keep-all; }

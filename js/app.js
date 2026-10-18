@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.6.0";
+var APP_VERSION = "1.6.1";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
