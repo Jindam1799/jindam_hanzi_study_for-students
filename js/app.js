@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.5.0";
+var APP_VERSION = "1.6.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -10,14 +10,6 @@ var APP_VERSION = "1.5.0";
   J.KAKAO_LINK = "http://pf.kakao.com/_jZYxmxj"; // 카카오톡 채널 채팅 바로가기
   J.PHONE = "01031917524"; // 전화 문의
   J.REVIEW_LINK = "https://litt.ly/quanlaoshi1799"; // 후기 보러가기
-  // 진담중국어 소개글 (안내 팝업 아래)
-  J.ABOUT_HTML = '<div class="about">' +
-    '<div class="about__head">🌱 한자어로 넓히는 어휘력,<br>중국어로 키우는 소통의 힘!</div>' +
-    '<p>한자 한 글자에서 시작해<br>우리말 어휘력을 넓히고,<br>중국어로 세상과 소통하는 힘까지!</p>' +
-    '<p>쉽게 접하고, 재미있게 반복하고,<br>배운 것은 내 것으로!</p>' +
-    '<p>진담중국어는 즐겁게 배우고 반복하며<br>자연스럽게 익힐 수 있도록<br>다양한 학습게임을 직접 개발하여 제공합니다.</p>' +
-    '<div class="about__sign">진담중국어 | 아웃풋에 진심</div>' +
-    "</div>";
   J.PHONE_BTN = '<button class="phone-btn" type="button" data-phone>📞 전화 문의</button>';
   J.KAKAO_CHAT = '<a class="kakao-btn kakao-btn--chat" href="http://pf.kakao.com/_jZYxmxj" target="_blank" rel="noopener">💬 카톡 채팅 바로가기</a>';
   J.weeks = [];
@@ -313,7 +305,6 @@ var APP_VERSION = "1.5.0";
         '<span class="wk__stamp">' + (n === J.GAMES.length ? "🏅 완료" : n ? "도장 " + n + "/" + J.GAMES.length : "시작 전") + "</span></button>";
     }).join("") +
       '<button class="wk wk--soon" data-next><span class="wk__no">' + next.no + '주차</span><span class="wk__title">🔒 ' + J.esc(next.title) + '</span><span class="wk__stamp">' + J.esc(next.label) + "</span></button>";
-    root.classList.add("scroll");
     root.innerHTML =
       '<button class="notice" type="button" data-notice><span class="notice__tag">📢 안내</span>' +
         '<span class="notice__text">&lt;한자어로 시작하는 중국어 과정&gt; 모집 중</span><span class="notice__go">›</span></button>' +
@@ -341,6 +332,11 @@ var APP_VERSION = "1.5.0";
         '<span class="next-card__body"><b>다음 주 예고 · ' + next.no + "주차</b>" +
         "<span>" + J.esc(next.title) + (next.teaser ? " — " + J.esc(next.teaser) : "") + "</span>" +
         '<span class="next-card__d">' + J.esc(next.label) + "</span></span></button>";
+    // 위쪽 안내 띠는 늘 보이게, 나머지만 스크롤
+    var body = document.createElement("div");
+    body.className = "scroll lobby__body";
+    Array.prototype.slice.call(root.children).forEach(function (el) { if (!el.classList.contains("notice")) body.appendChild(el); });
+    root.appendChild(body);
     J.$$("[data-week]", root).forEach(function (b) {
       b.addEventListener("click", function () {
         if (b.dataset.week === J.week.id) return;
@@ -351,7 +347,7 @@ var APP_VERSION = "1.5.0";
     J.$$("[data-next]", root).forEach(function (b) { b.addEventListener("click", function () { J.sfx("flip"); J.showNext(); }); });
     var on = J.$(".wk.on", root);
     if (on) requestAnimationFrame(function () { on.parentNode.scrollLeft = on.offsetLeft - 16; });
-    J.$("[data-notice]", root).addEventListener("click", function () { J.sfx("flip"); J.showNotice(); });
+    J.$("[data-notice]", root).addEventListener("click", function () { J.sfx("flip"); J.showNotice(null, null, 1); });
     J.$$("[data-go]", root).forEach(function (b) { b.addEventListener("click", function () { J.sfx("flip"); J.go(b.dataset.go); }); });
     var rv = J.$("[data-review]", root); if (rv) rv.addEventListener("click", function () { J.showReview(); });
     bindKakao(root);
@@ -413,22 +409,51 @@ var APP_VERSION = "1.5.0";
   };
 
   /* 모집 안내 팝업 */
-  J.noticeHTML = function () {
-    return '<div class="notice-pop">' +
-      '<div class="notice-pop__tag">📢 진담중국어 안내</div>' +
-      '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
-      '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
-      '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
-      '<div class="contact"><div class="contact__btns">' + J.PHONE_BTN + J.KAKAO_CHAT.replace("카톡 채팅 바로가기", "카톡 문의") + "</div>" +
-        '<a class="review-btn" href="' + J.REVIEW_LINK + '" target="_blank" rel="noopener">⭐ 후기 보러가기</a></div>' +
-      "</div>" +
-      J.ABOUT_HTML;
+  /* 진담중국어 안내 팝업: 1쪽 소개글, 2쪽 중국어 과정 모집 */
+  J.noticePages = function () {
+    return [
+      '<div class="notice-pop">' +
+        '<div class="notice-pop__tag">📢 진담중국어 안내</div>' +
+        '<div class="notice-pop__title">🌱 한자어로 넓히는 어휘력,<br>중국어로 키우는 <em>소통의 힘!</em></div>' +
+        '<p class="notice-pop__p">한자 한 글자에서 시작해<br>우리말 어휘력을 넓히고,<br>중국어로 세상과 소통하는 힘까지!</p>' +
+        '<p class="notice-pop__p">쉽게 접하고, 재미있게 반복하고,<br>배운 것은 내 것으로!</p>' +
+        '<p class="notice-pop__p">진담중국어는 즐겁게 배우고 반복하며<br>자연스럽게 익힐 수 있도록<br>다양한 학습게임을 직접 개발하여 제공합니다.</p>' +
+        '<div class="notice-pop__sign">진담중국어 | 아웃풋에 진심</div>' +
+      "</div>",
+      '<div class="notice-pop">' +
+        '<div class="notice-pop__tag">📢 중국어 과정 모집</div>' +
+        '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
+        '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
+        '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
+        '<div class="contact"><div class="contact__btns">' + J.PHONE_BTN + J.KAKAO_CHAT.replace("카톡 채팅 바로가기", "카톡 문의") + "</div>" +
+          '<a class="review-btn" href="' + J.REVIEW_LINK + '" target="_blank" rel="noopener">⭐ 후기 보러가기</a></div>' +
+      "</div>"
+    ];
   };
-  J.showNotice = function (then, label) {
-    var m = J.modal(J.noticeHTML() + '<button class="btn btn--red guide__go" type="button">' + (label || "확인") + "</button>", { onClose: then, noClose: !!then });
-    bindKakao(m);
-    J.$(".guide__go", m).addEventListener("click", function () { J.sfx("flip"); m.close(); });
+  J.showNotice = function (then, label, startPage) {
+    var pages = J.noticePages(), pg = startPage || 0;
+    var m = J.modal(
+      '<div class="npage"></div>' +
+      '<div class="ndots">' + pages.map(function (_, i) { return "<i></i>"; }).join("") + "</div>" +
+      '<div class="nnav"><button class="btn" type="button" data-prev>‹ 이전</button><button class="btn btn--red guide__go" type="button" data-nx></button></div>',
+      { onClose: then, noClose: !!then });
+    var box = J.$(".npage", m), prev = J.$("[data-prev]", m), nx = J.$("[data-nx]", m);
+    function show() {
+      box.innerHTML = pages[pg];
+      J.$$(".ndots i", m).forEach(function (d, i) { d.classList.toggle("on", i === pg); });
+      prev.hidden = pg === 0;
+      nx.textContent = pg < pages.length - 1 ? "다음 ▶" : (label || "확인");
+      bindKakao(box);
+      var sc = J.$(".modal__box", m); if (sc) sc.scrollTop = 0;
+    }
+    prev.addEventListener("click", function () { if (pg > 0) { pg--; J.sfx("flip"); show(); } });
+    nx.addEventListener("click", function () {
+      J.sfx("flip");
+      if (pg < pages.length - 1) { pg++; show(); } else m.close();
+    });
+    show();
   };
+
 
   J.promoHTML = function () {
     return '<div class="promo">' +

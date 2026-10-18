@@ -641,3 +641,17 @@ a.btn { text-decoration: none; }
 .about__head { font-family: var(--font-fun); font-size: 20px; line-height: 1.35; color: var(--red); }
 .about p { margin: 0; font-size: 15px; line-height: 1.6; word-break: keep-all; }
 .about__sign { font-family: var(--font-fun); font-size: 16px; padding-top: 8px; border-top: 2px dashed var(--line); }
+
+/* 로비: 안내 띠 고정, 아래만 스크롤 */
+.lobby__body { flex: 1; min-height: 0; }
+.notice { flex: none; }
+
+/* 안내 팝업 2쪽 */
+.notice-pop__p { margin: 0; font-size: 15px; line-height: 1.6; word-break: keep-all; opacity: .95; }
+.notice-pop__sign { font-family: var(--font-fun); font-size: 16px; color: #FFD66B; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.3); }
+.ndots { display: flex; justify-content: center; gap: 8px; }
+.ndots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); transition: width .2s; }
+.ndots i.on { width: 24px; border-radius: 999px; background: var(--red); }
+.nnav { display: flex; gap: 8px; }
+.nnav .btn { flex: none; }
+.nnav .guide__go { flex: 1; width: auto; }
