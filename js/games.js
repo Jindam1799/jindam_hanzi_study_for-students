@@ -3,8 +3,9 @@
   var J = window.JINDAM;
 
   /* ───────── 한자어 카드 ───────── */
-  J.screens.study = function (root) {
-    var words = J.week.words, i = 0;
+  J.screens.study = function (root, opts) {
+    var words = (opts && opts.only) || J.week.words, i = 0;
+    if (opts && opts.only) J.toast("헷갈렸던 낱말 " + words.length + "개를 복습해요");
     root.innerHTML =
       '<div class="study">' +
         '<div class="progress"><i></i></div>' +
@@ -64,12 +65,27 @@
       '<div class="flip">' +
         '<div class="row"><span class="pill">🃏 한자 ↔ 우리말 짝 찾기</span><span class="grow"></span><span class="pill" data-moves>0번 뒤집음</span></div>' +
         '<div class="flip__grid">' + cards.map(function (c, k) {
-          return '<button class="fcard" data-k="' + k + '"><div class="fcard__in"><div class="fcard__face fcard__back">眞</div><div class="fcard__face fcard__front">' + c.html + "</div></div></button>";
+          return '<button class="fcard" data-k="' + k + '"><div class="fcard__in"><div class="fcard__face fcard__back"><span class="fcard__logo">진담<br>중국어</span></div><div class="fcard__face fcard__front">' + c.html + "</div></div></button>";
         }).join("") + "</div>" +
-        '<div class="muted" style="text-align:center;font-size:14px" data-msg>카드 두 장을 뒤집어 같은 낱말을 찾아요</div>' +
+        '<div class="muted" style="text-align:center;font-size:14px" data-msg>👀 카드 자리를 잘 기억하세요!</div>' +
       "</div>";
-    var open = [], lock = false, moves = 0, matched = 0;
+    var open = [], lock = true, moves = 0, matched = 0;
     var movesEl = J.$("[data-moves]", root), msg = J.$("[data-msg]", root);
+    // 처음 3초 동안 카드를 모두 보여 주고, 뒤집으며 시작
+    var all = J.$$(".fcard", root), sec = 3, alive = true;
+    all.forEach(function (c) { c.classList.add("open"); });
+    movesEl.textContent = "⏱ " + sec;
+    var timer = setInterval(function () {
+      if (!alive) return clearInterval(timer);
+      sec--;
+      if (sec > 0) { movesEl.textContent = "⏱ " + sec; J.sfx("flip"); return; }
+      clearInterval(timer);
+      all.forEach(function (c) { c.classList.remove("open"); });
+      J.sfx("ok");
+      movesEl.textContent = "0번 뒤집음";
+      msg.textContent = "카드 두 장을 뒤집어 같은 낱말을 찾아요";
+      setTimeout(function () { lock = false; }, 400);
+    }, 1000);
     J.$$(".fcard", root).forEach(function (el) {
       el.addEventListener("click", function () {
         if (lock || el.classList.contains("open") || el.classList.contains("matched")) return;
@@ -96,6 +112,7 @@
         }
       });
     });
+    return { leave: function () { alive = false; clearInterval(timer); } };
   };
 
   /* ───────── 같은 글자 찾기 ───────── */
@@ -149,6 +166,7 @@
       '<div class="quiz">' +
         '<div class="row"><div class="progress grow"><i></i></div><span class="pill" data-count></span></div>' +
         '<div class="card quiz__q"></div>' +
+        '<div class="quiz__tools" hidden><button class="hint-btn" type="button" data-hint>💡 힌트</button><span class="hint-text"></span></div>' +
         '<div class="quiz__opts"></div>' +
       "</div>";
     var qEl = J.$(".quiz__q", root), optsEl = J.$(".quiz__opts", root), bar = J.$(".progress i", root), cnt = J.$("[data-count]", root);
@@ -165,9 +183,33 @@
       var item = deck.shift();
       bar.style.width = (solved / total) * 100 + "%";
       cnt.textContent = (solved + 1) + " / " + total;
-      var opts = J.shuffle([item.w].concat(J.pick(o.words.filter(function (x) { return x.id !== item.w.id && x.hangul !== item.w.hangul; }), 3)));
+      var others = o.words.filter(function (x) { return x.id !== item.w.id && x.hangul !== item.w.hangul; });
+      // 글자 수가 같은 낱말을 먼저 섞어서 보기를 고르기 어렵게
+      var same = J.shuffle(others.filter(function (x) { return x.hanja.length === item.w.hanja.length; }));
+      var rest = J.shuffle(others.filter(function (x) { return x.hanja.length !== item.w.hanja.length; }));
+      var opts = J.shuffle([item.w].concat(same.concat(rest).slice(0, 3)));
       o.render(qEl, item);
       optsEl.innerHTML = "";
+      // 힌트: 문제마다 단계별로 (마지막 단계는 틀린 보기 2개 지우기)
+      var tools = J.$(".quiz__tools", root), hintBtn = J.$("[data-hint]", root), hintText = J.$(".hint-text", root);
+      var hints = (o.hints ? o.hints(item) : []).concat([{ text: "틀린 보기 2개를 지웠어요", act: function () {
+        var wrong = J.shuffle(J.$$(".opt", optsEl).filter(function (b, k) { return opts[k].id !== item.w.id; })).slice(0, 2);
+        wrong.forEach(function (b) { b.classList.add("gone"); });
+      } }]);
+      var hi = 0;
+      tools.hidden = !o.hints;
+      hintText.innerHTML = "";
+      hintBtn.disabled = false;
+      hintBtn.textContent = "💡 힌트 " + hints.length + "개";
+      hintBtn.onclick = function () {
+        if (hi >= hints.length || optsEl.dataset.lock) return;
+        var h = hints[hi++];
+        J.sfx("flip");
+        if (h.act) h.act();
+        hintText.innerHTML = h.text;
+        hintBtn.textContent = hi < hints.length ? "💡 힌트 더 보기 (" + (hints.length - hi) + ")" : "힌트 다 썼어요";
+        hintBtn.disabled = hi >= hints.length;
+      };
       opts.forEach(function (w) {
         var b = J.h('<button class="opt' + (o.small && o.small(item) ? " small" : "") + '">' + o.label(w, item) + "</button>");
         b.addEventListener("click", function () {
@@ -206,11 +248,18 @@
     runDeck(root, {
       game: "quiz", words: words, deck: deck,
       small: function (item) { return item.type === "meaning"; },
-      label: function (w, item) { return item.type === "meaning" ? J.esc(w.meaning) : J.esc(w.hangul); },
+      label: function (w, item) { return item.type === "meaning" ? J.esc(w.meaning) : '<span class="hanja opt__hanja">' + J.esc(w.hanja) + "</span>"; },
+      hints: function (item) {
+        var w = item.w;
+        if (item.type === "parts") return [
+          { text: "우리말로 읽으면 <b>" + J.esc(w.hangul) + "</b>" }
+        ];
+        return [{ text: "글자 뜻: <b>" + J.esc(J.partsText(w)) + "</b>" }];
+      },
       render: function (q, item) {
         var w = item.w;
         if (item.type === "parts") {
-          q.innerHTML = '<span class="pill quiz__type">글자 뜻을 이으면 어떤 낱말?</span>' +
+          q.innerHTML = '<span class="pill quiz__type">글자 뜻을 이으면 어떤 한자어?</span>' +
             '<div class="quiz__prompt">' + w.parts.map(function (p) {
               return "<span>" + J.esc(p[1]) + " " + J.esc(p[2]) + "</span>";
             }).join('<span class="plus">+</span>') + "</div>";

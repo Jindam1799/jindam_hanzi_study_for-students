@@ -1,5 +1,6 @@
 /*
  * 따라 쓰기 — 한 글자를 3번씩
+ * 글자마다 먼저 획순 애니메이션을 자동으로 보여 줌
  * 1번째: 회색 글자를 보며 따라 쓰기 / 2번째: 한 번 더 / 3번째: 글자 없이 스스로 (두 번 틀리면 힌트)
  * 획순 자료: Hanzi Writer (Make Me a Hanzi 자료). 자료가 없는 글자는 손으로 따라 그리는 연습 칸으로 바뀌어요.
  */
@@ -25,7 +26,7 @@
 
   J.screens.write = function (root) {
     var words = J.week.words, wi = 0, ci = 0, round = 0, done = {}, alive = true;
-    var writer = null;
+    var writer = null, shownOrder = {};
     root.innerHTML =
       '<div class="write">' +
         '<div class="word-chips">' + words.map(function (w, i) {
@@ -92,6 +93,7 @@
       writer = null; fallback = null;
       btnSkip.hidden = btnClear.hidden = true;
       btnAnim.hidden = btnRetry.hidden = false;
+      btnAnim.disabled = btnRetry.disabled = false;
       loadHW().then(function (ok) {
         if (!alive) return;
         if (!ok) return startFallback(ch, size);
@@ -114,12 +116,35 @@
           onLoadCharDataError: function () { failed = true; holder.remove(); startFallback(ch, size); }
         });
         if (failed) return;
-        writer.quiz({
-          leniency: round === 0 ? 1.3 : 1.1,
-          onCorrectStroke: function () { J.sfx("flip"); },
-          onMistake: function () { /* 힌트는 Hanzi Writer가 보여 줌 */ },
-          onComplete: function () { setTimeout(roundDone, 450); }
-        });
+        var w0 = writer;
+        function quiz() {
+          if (!alive || writer !== w0) return;
+          msgEl.textContent = ROUND_MSG[round];
+          writer.quiz({
+            leniency: round === 0 ? 1.3 : 1.1,
+            onCorrectStroke: function () { J.sfx("flip"); },
+            onMistake: function () { /* 힌트는 Hanzi Writer가 보여 줌 */ },
+            onComplete: function () { setTimeout(roundDone, 450); }
+          });
+        }
+        // 글자마다 처음에는 획순을 먼저 자동으로 보여 주고 시작
+        var key = wi + "-" + ci;
+        if (round === 0 && !shownOrder[key]) {
+          shownOrder[key] = true;
+          msgEl.textContent = "👀 먼저 획순을 잘 보세요!";
+          btnAnim.disabled = btnRetry.disabled = true;
+          setTimeout(function () {
+            if (!alive || writer !== w0) return;
+            writer.animateCharacter({ onComplete: function () {
+              setTimeout(function () {
+                if (!alive || writer !== w0) return;
+                btnAnim.disabled = btnRetry.disabled = false;
+                writer.hideCharacter();
+                quiz();
+              }, 600);
+            } });
+          }, 400);
+        } else quiz();
       });
     }
 

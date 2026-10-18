@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.1.0";
+var APP_VERSION = "1.3.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -99,15 +99,48 @@ var APP_VERSION = "1.1.0";
     return b;
   };
 
-  /* 도장 기록 (이 기기에만 저장) */
-  var KEY = "jindam_hanja_stamps_v1";
+  /* 도장·복습 기록 (이 기기에만 저장) */
+  var KEY = "jindam_hanja_stamps_v1", PKEY = "jindam_hanja_progress_v1";
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function loadP() { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; } }
+  function saveP(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {} }
   J.stamp = function (weekId, game) {
-    var s = load(); s[weekId] = s[weekId] || {}; s[weekId][game] = (s[weekId][game] || 0) + 1;
+    var s = load(); s[weekId] = s[weekId] || {};
+    var first = !s[weekId][game];
+    s[weekId][game] = (s[weekId][game] || 0) + 1;
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    if (first) J.justEarned = game;
+    return first;
   };
   J.stamps = function (weekId) { return load()[weekId] || {}; };
+  J.isComplete = function (weekId) { var st = J.stamps(weekId); return J.GAMES.every(function (g) { return st[g.key]; }); };
+  J.addMisses = function (weekId, words) {
+    if (!words || !words.length) return;
+    var p = loadP(); p.misses = p.misses || {}; var m = p.misses[weekId] = p.misses[weekId] || [];
+    words.forEach(function (w) { if (w.hanja && m.indexOf(w.hanja) < 0) m.push(w.hanja); });
+    saveP(p);
+  };
+  J.missWords = function (weekId) {
+    var w = J.weeks.find(function (x) { return x.id === weekId; }); var list = (loadP().misses || {})[weekId] || [];
+    return w ? w.words.filter(function (x) { return list.indexOf(x.hanja) >= 0; }) : [];
+  };
+  J.flag = function (name, val) { var p = loadP(); p.flags = p.flags || {}; if (val === undefined) return p.flags[name]; p.flags[name] = val; saveP(p); };
 
+  /* 다음 주차 예고: data/weeks.js 의 JINDAM_NEXT, 없으면 마지막 주차 + 7일 */
+  J.nextInfo = function () {
+    var last = J.weeks[J.weeks.length - 1];
+    var n = window.JINDAM_NEXT || {};
+    var date = n.date;
+    if (!date && last && last.date) { var d = new Date(last.date + "T00:00:00+09:00"); d.setDate(d.getDate() + 7); date = d.toISOString().slice(0, 10); }
+    var dday = null, label = "곧 열려요";
+    if (date) {
+      var today = new Date(); var t = new Date(date + "T00:00:00+09:00");
+      dday = Math.ceil((t - today) / 86400000);
+      var dd = date.replace(/^\d{4}-0?(\d+)-0?(\d+)$/, "$1월 $2일");
+      label = dday > 0 ? "D-" + dday + " · " + dd + " 열려요" : "곧 열려요!";
+    }
+    return { no: (last ? last.no : 0) + 1, title: n.title || "새 한자어", hint: n.hint || "?", teaser: n.teaser || "", dday: dday, label: label };
+  };
 
   /* ───────── 설정 (이 기기에만 저장) ───────── */
   var SKEY = "jindam_hanja_settings_v1";
@@ -140,6 +173,7 @@ var APP_VERSION = "1.1.0";
       '<label class="set"><span class="set__name">🎵 효과음 크기 <b data-v="sfxVolume"></b></span>' +
         '<input type="range" min="0" max="1" step="0.1" data-k="sfxVolume"></label>' +
       '<div class="row row--center"><button class="btn btn--sun btn--sm" data-test>🔊 들어 보기 · 学生</button></div>' +
+      '<label class="set"><span class="set__name">🗣️ 중국어 목소리</span><select class="set__select" data-voice></select></label>' +
       '<div class="set__voice muted"></div>' +
       '<div class="row row--center"><button class="btn btn--sm" data-guide>안내 다시 보기</button><button class="btn btn--sm" data-reset>처음 값으로</button></div>' +
       '<div class="set__ver muted">진담 한자어 놀이터 v' + APP_VERSION + "</div>");
@@ -150,14 +184,21 @@ var APP_VERSION = "1.1.0";
         b.textContent = k === "ttsRate" ? (v <= 0.7 ? "천천히" : v >= 1 ? "빠르게" : "보통") + " ×" + v.toFixed(2) : (v ? pct(v) + "%" : "끔");
       });
       var name = window.JTTS && JTTS.voiceName();
-      J.$(".set__voice", m).textContent = name ? "지금 쓰는 중국어 목소리: " + name : "이 기기에서 중국어 목소리를 찾지 못했어요. Chrome에서 열어 주세요.";
+      J.$(".set__voice", m).textContent = name ? "지금 쓰는 목소리: " + name + " · 소리가 안 나면 다른 목소리를 골라 보세요" : "이 기기에서 중국어 목소리를 찾지 못했어요. Chrome에서 열어 주세요.";
+      var sel = J.$("[data-voice]", m), vs = JTTS.voices();
+      sel.innerHTML = '<option value="">자동 (Tingting 먼저)</option>' + vs.map(function (v) {
+        return '<option value="' + J.esc(v.name) + '"' + (v.name === J.settings.voiceName ? " selected" : "") + ">" + J.esc(v.name) + (v.bad ? " — 소리 안 남" : "") + "</option>";
+      }).join("");
     }
     J.$$("[data-k]", m).forEach(function (r) {
       r.addEventListener("input", function () { J.settings[r.dataset.k] = parseFloat(r.value); saveSettings(); paint(); });
       r.addEventListener("change", function () { if (r.dataset.k === "sfxVolume") J.sfx("ok"); });
     });
-    J.$("[data-test]", m).addEventListener("click", function () { JTTS.speak("学生"); });
-    J.$("[data-reset]", m).addEventListener("click", function () { J.settings.ttsVolume = 1; J.settings.ttsRate = 0.85; J.settings.sfxVolume = 0.6; saveSettings(); paint(); });
+    J.$("[data-test]", m).addEventListener("click", function () { JTTS.speak("学生").then(paint); });
+    J.$("[data-voice]", m).addEventListener("change", function (e) {
+      J.settings.voiceName = e.target.value || null; saveSettings(); JTTS.refresh(); JTTS.speak("学生").then(paint);
+    });
+    J.$("[data-reset]", m).addEventListener("click", function () { J.settings.ttsVolume = 1; J.settings.ttsRate = 0.85; J.settings.sfxVolume = 0.6; J.settings.voiceName = null; saveSettings(); JTTS.refresh(); paint(); });
     J.$("[data-guide]", m).addEventListener("click", function () { m.close(); setTimeout(function () { J.showGuide(); }, 200); });
     paint();
   };
@@ -182,7 +223,7 @@ var APP_VERSION = "1.1.0";
       if (window.JTTS) JTTS.unlock();
       J.sfx("win");
       intro.classList.add("out");
-      setTimeout(function () { intro.remove(); J.showGuide(then); }, 350);
+      setTimeout(function () { intro.remove(); J.showNotice(function () { J.showGuide(then); }, "다음 ▶"); }, 350);
     }
     intro.addEventListener("pointerup", go);
     intro.addEventListener("keydown", go);
@@ -200,7 +241,6 @@ var APP_VERSION = "1.1.0";
         '<li><span class="guide__n c-mint">三</span><div>틀려도 괜찮아요!<br><small>틀린 낱말은 다시 나와서 끝까지 익혀요</small></div></li>' +
       "</ol>" +
       '<div class="guide__tips"><span>🔊 소리를 켜 주세요</span><span>⚙️ 설정에서 음성 크기 조절</span><span>🏅 놀이를 끝내면 도장!</span></div>' +
-      '<div class="guide__promo">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회<br><b>&lt;한자어로 시작하는 중국어 과정&gt; 모집</b> · 카톡 jindam1799</div>' +
       '<button class="btn btn--red guide__go" type="button">시작하기 ▶</button>',
       { noClose: true, onClose: then });
     J.$(".guide__go", m).addEventListener("click", function () { J.sfx("flip"); m.close(); });
@@ -245,33 +285,136 @@ var APP_VERSION = "1.1.0";
   function home(root) {
     var w = J.week;
     var st = J.stamps(w.id);
-    var weekOpts = J.weeks.map(function (x) {
-      return '<option value="' + x.id + '"' + (x.id === w.id ? " selected" : "") + ">" + x.no + "주차 · " + J.esc(x.title) + "</option>";
-    }).reverse().join("");
     var done = J.GAMES.filter(function (g) { return st[g.key]; }).length;
+    var complete = done === J.GAMES.length;
+    var next = J.nextInfo();
+    var seen = J.flag("seenWeeks") || [];
+    var fresh = J.justEarned; J.justEarned = null;
+    var weeks = J.weeks.map(function (x) {
+      var n = J.GAMES.filter(function (g) { return J.stamps(x.id)[g.key]; }).length;
+      var isNew = seen.indexOf(x.id) < 0;
+      return '<button class="wk' + (x.id === w.id ? " on" : "") + (n === J.GAMES.length ? " done" : "") + '" data-week="' + x.id + '">' +
+        (isNew ? '<span class="wk__new">NEW</span>' : "") +
+        '<span class="wk__no">' + x.no + "주차</span>" +
+        '<span class="wk__title">' + J.esc(x.title) + "</span>" +
+        '<span class="wk__stamp">' + (n === J.GAMES.length ? "🏅 완료" : n ? "도장 " + n + "/" + J.GAMES.length : "시작 전") + "</span></button>";
+    }).join("") +
+      '<button class="wk wk--soon" data-next><span class="wk__no">' + next.no + '주차</span><span class="wk__title">🔒 ' + J.esc(next.title) + '</span><span class="wk__stamp">' + J.esc(next.label) + "</span></button>";
     root.classList.add("scroll");
     root.innerHTML =
+      '<button class="notice" type="button" data-notice><span class="notice__tag">📢 안내</span>' +
+        '<span class="notice__text">&lt;한자어로 시작하는 중국어 과정&gt; 모집 중</span><span class="notice__go">›</span></button>' +
+      '<div class="weeks__head"><b>주차 고르기</b><span class="muted">매주 새 주차가 열려요!</span></div>' +
+      '<div class="weeks">' + weeks + "</div>" +
       '<div class="hero">' +
-        '<div class="hero__week"><select aria-label="주차 고르기">' + weekOpts + "</select></div>" +
-        "<h1>" + J.esc(w.title) + "<br><em>놀이터</em></h1>" +
+        '<div class="hero__week">' + w.no + "주차" + (w.date ? " · " + J.esc(w.date.replace(/^\d{4}-0?(\d+)-0?(\d+)$/, "$1월 $2일")) : "") + "</div>" +
+        "<h1>" + J.esc(w.title) + "<br><em>미션</em></h1>" +
         "<p>" + J.esc(w.intro || w.subtitle || "") + "</p>" +
-        '<div class="hero__progress"><span class="stamp-dot' + (done ? " on" : "") + '">🏅 도장 ' + done + " / " + J.GAMES.length + "</span>" +
-        '<span class="stamp-dot">낱말 ' + w.words.length + "개</span></div>" +
-        '<div class="hero__seal">' + J.esc((w.keyChars && w.keyChars[0] && w.keyChars[0].c) || "學") + "</div>" +
+        '<div class="mission-bar"><div class="progress"><i style="width:' + (done / J.GAMES.length * 100) + '%"></i></div><b>' + done + " / " + J.GAMES.length + "</b></div>" +
+        (complete ? '<button class="hero__done" data-review><span class="seal-txt">' + w.no + "주차<br>완료</span></button>" :
+          '<div class="hero__seal">' + J.esc((w.keyChars && w.keyChars[0] && w.keyChars[0].c) || "學") + "</div>") +
       "</div>" +
-      '<div class="tiles">' + J.GAMES.map(function (g) {
-        return '<button class="tile ' + g.color + '" data-go="' + g.key + '">' +
+      '<div class="missions">' + J.GAMES.map(function (g, i) {
+        var got = !!st[g.key];
+        return '<button class="mission ' + g.color + (got ? " got" : "") + '" data-go="' + g.key + '">' +
+          '<span class="mission__no">미션 ' + (i + 1) + "</span>" +
           '<span class="tile__icon">' + g.icon + "</span>" +
-          '<span class="tile__name">' + g.name + "</span>" +
-          '<span class="tile__desc">' + g.desc + "</span>" +
-          (st[g.key] ? '<span class="tile__stamp">참<br>잘</span>' : "") +
+          '<span class="mission__body"><span class="tile__name">' + g.name + '</span><span class="tile__desc">' + g.desc + "</span></span>" +
+          '<span class="mission__slot' + (got ? " on" : "") + (fresh === g.key ? " fresh" : "") + '">' + (got ? '<span class="seal-txt">참<br>잘했어요</span>' : "도장") + "</span>" +
           "</button>";
       }).join("") + "</div>" +
+      '<button class="next-card" data-next>' +
+        '<span class="next-card__q">' + J.esc(next.hint) + "</span>" +
+        '<span class="next-card__body"><b>다음 주 예고 · ' + next.no + "주차</b>" +
+        "<span>" + J.esc(next.title) + (next.teaser ? " — " + J.esc(next.teaser) : "") + "</span>" +
+        '<span class="next-card__d">' + J.esc(next.label) + "</span></span></button>" +
       J.promoHTML();
-    J.$("select", root).addEventListener("change", function (e) { J.setWeek(e.target.value); J.go("home"); });
+    J.$$("[data-week]", root).forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (b.dataset.week === J.week.id) return;
+        J.sfx("flip"); J.setWeek(b.dataset.week); J.go("home");
+        J.toast(J.week.no + "주차로 바꿨어요");
+      });
+    });
+    J.$$("[data-next]", root).forEach(function (b) { b.addEventListener("click", function () { J.sfx("flip"); J.showNext(); }); });
+    var on = J.$(".wk.on", root);
+    if (on) requestAnimationFrame(function () { on.parentNode.scrollLeft = on.offsetLeft - 16; });
+    J.$("[data-notice]", root).addEventListener("click", function () { J.sfx("flip"); J.showNotice(); });
     J.$$("[data-go]", root).forEach(function (b) { b.addEventListener("click", function () { J.sfx("flip"); J.go(b.dataset.go); }); });
+    var rv = J.$("[data-review]", root); if (rv) rv.addEventListener("click", function () { J.showReview(); });
     bindKakao(root);
+    if (seen.indexOf(w.id) < 0) { seen.push(w.id); J.flag("seenWeeks", seen); }
+    if (fresh) { J.sfx("ok"); var slot = J.$(".mission__slot.fresh", root); if (slot) slot.scrollIntoView({ block: "center", behavior: "smooth" }); }
+    // 모든 미션을 처음 끝냈을 때: 복습 안내 + 큰 도장
+    if (complete && !J.booting && !J.flag("doneShown_" + w.id)) {
+      J.flag("doneShown_" + w.id, true);
+      setTimeout(function () { J.showReview(true); }, fresh ? 900 : 300);
+    }
   }
+
+  /* 주차 완료 → 복습 안내 */
+  J.showReview = function (celebrate) {
+    var w = J.week, next = J.nextInfo(), miss = J.missWords(w.id);
+    if (celebrate) { J.sfx("win"); J.confetti(); }
+    var m = J.modal(
+      '<div class="big-stamp"><span>' + w.no + "주차</span><b>미션 완료</b><small>진담중국어</small></div>" +
+      '<h3 class="modal__title">' + J.esc(w.title) + "<br>도장 6개를 다 모았어요!</h3>" +
+      '<div class="review-tip"><b>📖 이렇게 복습해요</b>' +
+        "<ol><li>한자어 카드를 보며 <b>소리 내어</b> 한 번 더 읽기</li>" +
+        "<li>낱말 하나를 골라 <b>글자 뜻으로 쪼개서</b> 가족에게 설명하기</li>" +
+        "<li>중국어 소리를 듣고 <b>따라 말하기</b> 🔊</li></ol></div>" +
+      (miss.length ? '<div class="review-miss"><b>헷갈렸던 낱말</b><div class="result__review">' +
+        miss.map(function (x) { return '<span><b class="hanja">' + J.esc(x.hanja) + "</b> " + J.esc(x.hangul) + "</span>"; }).join("") + "</div></div>" : "") +
+      '<div class="review-next">🔒 <b>' + next.no + "주차 · " + J.esc(next.title) + "</b> " + J.esc(next.label) + "<br><small>다음 주에도 새 미션과 도장이 기다려요!</small></div>" +
+      '<div class="row row--center"><button class="btn btn--red" data-study>한자어 카드로 복습</button><button class="btn" data-close>좋아요</button></div>');
+    J.$("[data-study]", m).addEventListener("click", function () { m.close(); J.go("study", { only: miss.length ? miss : null }); });
+    J.$("[data-close]", m).addEventListener("click", function () { m.close(); });
+  };
+
+  /* 다음 주 예고 팝업 */
+  J.showNext = function () {
+    var n = J.nextInfo();
+    var m = J.modal(
+      '<div class="next-pop__q">' + J.esc(n.hint) + "</div>" +
+      '<h3 class="modal__title">' + n.no + "주차 예고</h3>" +
+      '<div class="next-pop__title">' + J.esc(n.title) + "</div>" +
+      (n.teaser ? '<div class="muted" style="text-align:center">' + J.esc(n.teaser) + "</div>" : "") +
+      '<div class="next-pop__d">' + J.esc(n.label) + "</div>" +
+      '<div class="muted" style="text-align:center;font-size:14px">새 주차가 열리면 새 미션 6개와 도장판이 생겨요.<br>이번 주 미션을 먼저 모두 끝내 볼까요?</div>' +
+      '<button class="btn btn--red guide__go" type="button">기대할게요!</button>');
+    J.$(".guide__go", m).addEventListener("click", function () { m.close(); });
+  };
+
+  /* 새 주차가 열렸을 때 (전에 와 본 학생) */
+  J.showNewWeek = function (then) {
+    var w = J.weeks[J.weeks.length - 1];
+    J.sfx("win"); J.confetti();
+    var m = J.modal(
+      '<div class="new-week__badge">NEW</div>' +
+      '<div class="next-pop__q hanja">' + J.esc((w.keyChars && w.keyChars[0] && w.keyChars[0].c) || "新") + "</div>" +
+      '<h3 class="modal__title">' + w.no + "주차가 열렸어요! 🎉</h3>" +
+      '<div class="next-pop__title">' + J.esc(w.title) + "</div>" +
+      '<div class="muted" style="text-align:center">새 낱말 ' + w.words.length + "개 · 미션 6개 · 도장판이 준비됐어요.</div>" +
+      '<button class="btn btn--red guide__go" type="button">' + w.no + "주차 시작! ▶</button>",
+      { onClose: then });
+    J.$(".guide__go", m).addEventListener("click", function () { m.close(); });
+  };
+
+  /* 모집 안내 팝업 */
+  J.noticeHTML = function () {
+    return '<div class="notice-pop">' +
+      '<div class="notice-pop__tag">📢 진담중국어 안내</div>' +
+      '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
+      '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
+      '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
+      '<div class="promo__contact"><span class="promo__tag">문의처</span><button class="kakao-btn" type="button" data-kakao>💬 카톡 jindam1799</button></div>' +
+      "</div>";
+  };
+  J.showNotice = function (then, label) {
+    var m = J.modal(J.noticeHTML() + '<button class="btn btn--red guide__go" type="button">' + (label || "확인") + "</button>", { onClose: then, noClose: !!then });
+    bindKakao(m);
+    J.$(".guide__go", m).addEventListener("click", function () { J.sfx("flip"); m.close(); });
+  };
 
   J.promoHTML = function () {
     return '<div class="promo">' +
@@ -296,7 +439,10 @@ var APP_VERSION = "1.1.0";
 
   /* 결과 화면 */
   J.result = function (root, o) {
-    J.stamp(J.week.id, o.game);
+    var first = J.stamp(J.week.id, o.game);
+    J.addMisses(J.week.id, o.review);
+    var left = J.GAMES.filter(function (g) { return !J.stamps(J.week.id)[g.key]; }).length;
+    var idx = J.GAMES.findIndex(function (g) { return g.key === o.game; }) + 1;
     J.sfx("win");
     J.confetti();
     root.innerHTML =
@@ -306,7 +452,8 @@ var APP_VERSION = "1.1.0";
         (o.sub ? '<div class="muted">' + o.sub + "</div>" : "") +
         (o.review && o.review.length ? '<div class="muted">헷갈렸던 낱말 — 한 번 더 소리 내어 읽어 봐요</div><div class="result__review">' +
           o.review.map(function (w) { return "<span><b class=\"hanja\">" + J.esc(w.hanja) + "</b> " + J.esc(w.hangul) + "</span>"; }).join("") + "</div>" : "") +
-        '<div class="row row--center"><button class="btn btn--red" data-again>한 번 더</button><button class="btn" data-home>다른 놀이</button></div>' +
+        '<div class="result__mission">' + (first ? "미션 " + idx + " 도장 쾅! " : "") + (left ? "남은 미션 " + left + "개" : "🏅 이번 주 미션을 모두 끝냈어요!") + "</div>" +
+        '<div class="row row--center"><button class="btn" data-again>한 번 더</button><button class="btn btn--red" data-home>' + (first ? "도장 보러 가기 ▶" : "미션판으로") + "</button></div>" +
         '<div class="result__promo">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회<br><b>&lt;한자어로 시작하는 중국어 과정&gt; 모집</b> &nbsp;<button class="kakao-btn" type="button" data-kakao>💬 jindam1799</button></div>' +
       "</div>";
     J.$("[data-again]", root).addEventListener("click", function () { J.go(o.game); });
@@ -338,8 +485,16 @@ var APP_VERSION = "1.1.0";
       if (!J.weeks.length) { stage.innerHTML = '<p class="card">이번 주 자료를 불러오지 못했어요. 새로고침해 주세요.</p>'; return; }
       J.setWeek(null); // 늘 가장 최근 주차로 시작
       var start = location.hash.replace("#", "");
+      var seen = J.flag("seenWeeks") || [];
+      var latest = J.weeks[J.weeks.length - 1];
+      var newOpen = seen.length > 0 && seen.indexOf(latest.id) < 0;
+      J.booting = true;
       J.go("home");
-      J.showIntro(function () { if (J.screens[start]) J.go(start); });
+      J.showIntro(function () {
+        J.booting = false;
+        if (newOpen) J.showNewWeek(function () { J.go("home"); });
+        else if (J.screens[start]) J.go(start);
+      });
     });
   };
 })();
