@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <!-- 확대 막기 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>진담 한자어 놀이터</title>
+  <meta name="description" content="교과서 속 한자어를 쪼개 보고, 따라 쓰고, 중국어 소리까지! 진담중국어가 매주 새로 올리는 한자어 놀이.">
+  <meta name="theme-color" content="#FFF7EC">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- 링크 보낼 때 보이는 미리보기 (카카오톡·문자) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="진담중국어">
+  <meta property="og:title" content="진담 한자어 놀이터 — 뜻을 알면 교과서가 쉬워져요">
+  <meta property="og:description" content="한자어 카드 · 따라 쓰기 · 카드 짝 맞추기 · 중국어 소리 퀴즈. 매주 새 낱말이 올라와요!">
+  <meta property="og:url" content="https://jindam1799.github.io/jindam_hanzi_study_for-students/">
+  <meta property="og:image" content="https://jindam1799.github.io/jindam_hanzi_study_for-students/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- 아이콘 -->
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="한자어 놀이터">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <!-- 항상 Chrome에서 열기 (가장 먼저 실행) -->
+  <script src="js/inapp.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=1.0.0">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="topbar__back" type="button" aria-label="처음으로" hidden>⌂</button>
+      <div class="brand">
+        <img class="brand__logo" src="assets/icon-180.png" alt="">
+        <div class="brand__name">한자어 놀이터<small>진담중국어</small></div>
+      </div>
+      <div class="topbar__title"></div>
+      <div class="topbar__right"><span class="pill js-version"></span></div>
+    </header>
+
+    <main class="stage"></main>
+
+    <footer class="footer">
+      <div class="footer__promo">
+        <b>진담중국어</b><span><span class="footer__long">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회 · </span>&lt;한자어로 시작하는 중국어 과정&gt; 모집</span>
+        <button class="kakao-btn" type="button" data-kakao>💬 카톡 jindam1799</button>
+      </div>
+      <div class="footer__copy">
+        © <span class="js-year">2026</span> 진담중국어(전진아). All rights reserved. 무단 복사·배포 금지.
+        <span class="footer__ver js-version"></span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/tts.js?v=1.0.0"></script>
+  <script src="js/app.js?v=1.0.0"></script>
+  <script src="js/games.js?v=1.0.0"></script>
+  <script src="js/write.js?v=1.0.0"></script>
+  <script src="data/weeks.js?v=1.0.0"></script>
+  <script>JINDAM.boot();</script>
+</body>
+</html>

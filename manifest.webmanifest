@@ -1,0 +1,17 @@
+{
+  "name": "진담 한자어 놀이터",
+  "short_name": "한자어 놀이터",
+  "description": "교과서 속 한자어를 쪼개 보고, 따라 쓰고, 중국어 소리까지 — 진담중국어",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFF7EC",
+  "theme_color": "#FFF7EC",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
