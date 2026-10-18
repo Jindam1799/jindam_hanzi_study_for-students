@@ -2,12 +2,14 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.4.1";
+var APP_VERSION = "1.4.2";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
   J.version = APP_VERSION;
   J.KAKAO_LINK = "http://pf.kakao.com/_jZYxmxj"; // 카카오톡 채널 채팅 바로가기
+  J.PHONE = "01031917524"; // 전화 문의
+  J.PHONE_BTN = '<button class="phone-btn" type="button" data-phone>📞 전화 문의</button>';
   J.KAKAO_CHAT = '<a class="kakao-btn kakao-btn--chat" href="http://pf.kakao.com/_jZYxmxj" target="_blank" rel="noopener">💬 카톡 채팅 바로가기</a>';
   J.weeks = [];
   J.screens = {};
@@ -408,7 +410,7 @@ var APP_VERSION = "1.4.1";
       '<div class="notice-pop__lead">한자어로 넓히는 어휘력,<br>중국어로 여는 소통과 기회</div>' +
       '<div class="notice-pop__title">&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></div>' +
       '<ul class="notice-pop__list"><li>초등과정 <small>(저학년 / 고학년)</small></li><li>중·고등과정</li><li>HSK + 스피킹 과정</li></ul>' +
-      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
+      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + J.PHONE_BTN + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
       "</div>";
   };
   J.showNotice = function (then, label) {
@@ -422,12 +424,29 @@ var APP_VERSION = "1.4.1";
       '<div class="promo__eyebrow">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회</div>' +
       "<h2>&lt;한자어로 시작하는 중국어 과정&gt; <em>모집</em></h2>" +
       '<div class="promo__courses"><span>초등과정 (저학년 / 고학년)</span><span>중·고등과정</span><span>HSK + 스피킹 과정</span></div>' +
-      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
+      '<div class="promo__contact"><span class="promo__tag">문의처</span>' + J.KAKAO_CHAT + J.PHONE_BTN + '<button class="kakao-id" type="button" data-kakao>ID jindam1799 복사</button></div>' +
       '<div class="promo__brand">진담중국어 · 진심을 담은 중국어</div>' +
       "</div>";
   };
 
+  /* 전화 문의: 번호를 보여 주고 바로 걸 수 있게 */
+  J.showPhone = function () {
+    var n = J.PHONE, pretty = n.replace(/^(\d{3})(\d{4})(\d{4})$/, "$1-$2-$3");
+    var m = J.modal(
+      '<h3 class="modal__title">📞 전화 문의</h3>' +
+      '<div class="phone-num">' + pretty + "</div>" +
+      '<div class="muted" style="text-align:center;font-size:14px">진담중국어 · &lt;한자어로 시작하는 중국어 과정&gt;</div>' +
+      '<a class="btn btn--red guide__go" href="tel:' + n + '">전화 걸기</a>' +
+      '<button class="btn" type="button" data-copy>번호 복사</button>');
+    J.$("[data-copy]", m).addEventListener("click", function () {
+      if (navigator.clipboard) navigator.clipboard.writeText(pretty).then(function () { J.toast("전화번호를 복사했어요"); });
+    });
+  };
+
   function bindKakao(root) {
+    J.$$("[data-phone]", root).forEach(function (b) {
+      b.addEventListener("click", function () { J.sfx("flip"); J.showPhone(); });
+    });
     J.$$("[data-kakao]", root).forEach(function (b) {
       b.addEventListener("click", function () {
         var ok = function () { J.toast("카톡 아이디 jindam1799 복사됐어요"); };
