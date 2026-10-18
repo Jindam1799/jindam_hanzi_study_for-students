@@ -405,3 +405,84 @@ body {
   .quiz__q { flex: 0 1 auto; min-height: 46%; }
   .quiz { justify-content: center; }
 }
+
+/* ───────── 설정 버튼 ───────── */
+.topbar__gear {
+  width: 44px; height: 44px; border-radius: 14px; background: var(--paper); box-shadow: var(--shadow);
+  display: grid; place-items: center; font-size: 22px;
+}
+
+/* ───────── 팝업 ───────── */
+.modal {
+  position: fixed; inset: 0; z-index: 80; background: rgba(42, 36, 32, .45);
+  display: grid; place-items: center; padding: 16px; animation: fade-in .2s;
+}
+.modal.out { opacity: 0; transition: opacity .18s; }
+.modal__box {
+  position: relative; width: min(440px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--paper); border-radius: 28px; padding: 22px 20px 20px; box-shadow: 0 8px 0 rgba(42,36,32,.18);
+  display: flex; flex-direction: column; gap: 12px; animation: pop-in .25s cubic-bezier(.2, 1.4, .5, 1);
+}
+.modal__x { position: absolute; right: 12px; top: 10px; width: 40px; height: 40px; font-size: 26px; border-radius: 12px; }
+.modal__title { font-family: var(--font-fun); font-weight: 400; font-size: 26px; margin: 0; text-align: center; }
+
+.set { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 16px; padding: 10px 14px 12px; }
+.set__name { font-family: var(--font-fun); font-size: 17px; display: flex; justify-content: space-between; }
+.set__name b { font-weight: 400; color: var(--red); }
+.set__ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); }
+.set input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; background: transparent; touch-action: pan-x; }
+.set input[type=range]::-webkit-slider-runnable-track { height: 12px; border-radius: 999px; background: var(--line); }
+.set input[type=range]::-moz-range-track { height: 12px; border-radius: 999px; background: var(--line); }
+.set input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -9px; border-radius: 50%; background: var(--red); border: 4px solid #fff; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+.set input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--red); border: 4px solid #fff; }
+.set__voice, .set__ver { font-size: 12px; text-align: center; }
+
+/* 안내 팝업 */
+.guide__badge { align-self: center; background: var(--red-soft); color: var(--red); font-family: var(--font-fun); border-radius: 999px; padding: 4px 14px; }
+.guide { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.guide li { display: flex; gap: 12px; align-items: center; font-size: 17px; line-height: 1.35; }
+.guide b { font-family: var(--font-fun); font-weight: 400; }
+.guide small { color: var(--ink-soft); font-size: 14px; }
+.guide__n { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-family: var(--font-hanja); font-weight: 900; font-size: 22px; }
+.guide__tips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.guide__tips span { background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.guide__promo { background: var(--ink); color: #FFF7EC; border-radius: 16px; padding: 10px 14px; font-size: 13px; text-align: center; line-height: 1.5; }
+.guide__promo b { color: #FFD66B; font-weight: 400; font-family: var(--font-fun); font-size: 15px; }
+.guide__go { width: 100%; min-height: 58px; font-size: 22px; }
+
+/* ───────── 인트로 ───────── */
+.intro {
+  position: fixed; inset: 0; z-index: 90; cursor: pointer;
+  background: var(--red); color: #FFF7EC;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 24px; text-align: center; overflow: hidden;
+}
+.intro.out { opacity: 0; transform: scale(1.04); transition: opacity .35s, transform .35s; }
+.intro__bubbles i { position: absolute; border-radius: 50%; background: rgba(255, 247, 236, .10); }
+.intro__bubbles i:nth-child(1) { width: 260px; height: 260px; left: -80px; top: -60px; }
+.intro__bubbles i:nth-child(2) { width: 180px; height: 180px; right: -50px; top: 18%; background: rgba(255, 214, 107, .25); }
+.intro__bubbles i:nth-child(3) { width: 320px; height: 320px; right: -120px; bottom: -140px; }
+.intro__bubbles i:nth-child(4) { width: 90px; height: 90px; left: 12%; bottom: 14%; background: rgba(255, 214, 107, .3); }
+.intro__logo { width: clamp(96px, 26vw, 150px); height: auto; border-radius: 30%; box-shadow: 0 8px 0 rgba(0,0,0,.18); outline: 5px solid rgba(255,247,236,.9); animation: bob 2.4s ease-in-out infinite; position: relative; }
+.intro__brand { font-size: 16px; opacity: .85; letter-spacing: .1em; margin-top: 8px; position: relative; }
+.intro__title { font-family: var(--font-fun); font-weight: 400; font-size: clamp(40px, 11vw, 68px); margin: 0; line-height: 1.1; position: relative; }
+.intro__sub { margin: 0; font-size: clamp(17px, 4.4vw, 22px); position: relative; }
+.intro__sub em { font-style: normal; color: #FFD66B; }
+.intro__chars { display: flex; gap: 10px; margin: 10px 0 6px; position: relative; }
+.intro__chars span {
+  width: clamp(48px, 13vw, 64px); height: clamp(48px, 13vw, 64px); border-radius: 16px; background: #FFF7EC; color: var(--ink);
+  display: grid; place-items: center; font-family: var(--font-hanja); font-weight: 900; font-size: clamp(26px, 7vw, 36px);
+  box-shadow: 0 4px 0 rgba(0,0,0,.15); animation: bob 2.4s ease-in-out infinite;
+}
+.intro__chars span:nth-child(2) { animation-delay: .2s; background: #FFE7A0; }
+.intro__chars span:nth-child(3) { animation-delay: .4s; background: #CFEDE0; }
+.intro__chars span:nth-child(4) { animation-delay: .6s; background: #D6E9FA; }
+.intro__tap {
+  margin-top: 18px; font-family: var(--font-fun); font-size: clamp(20px, 5.4vw, 26px);
+  background: #FFF7EC; color: var(--red); border-radius: 999px; padding: 12px 26px; position: relative;
+  box-shadow: 0 5px 0 rgba(0,0,0,.18); animation: blink 1.4s ease-in-out infinite;
+}
+.intro__copy { position: absolute; bottom: calc(14px + var(--safe-b)); left: 0; right: 0; font-size: 11px; opacity: .7; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .6; transform: scale(.96); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }

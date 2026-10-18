@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.0.0";
+var APP_VERSION = "1.1.0";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -27,7 +27,7 @@ var APP_VERSION = "1.0.0";
     ["gesturestart", "gesturechange", "gestureend"].forEach(function (t) { document.addEventListener(t, stop, { passive: false }); });
     document.addEventListener("touchmove", function (e) {
       if (e.touches && e.touches.length > 1) { e.preventDefault(); return; }
-      if (!e.target.closest || !e.target.closest(".scroll, .word-chips")) e.preventDefault();
+      if (!e.target.closest || !e.target.closest(".scroll, .word-chips, .modal__box, input")) e.preventDefault();
     }, { passive: false });
     // 두 번 탭 확대는 CSS touch-action: manipulation 으로 막음 (빠른 연속 탭은 그대로 됨)
     // PC: Ctrl+휠, Ctrl +/-/0, Ctrl+C/V/X/A/S/P/U
@@ -70,6 +70,7 @@ var APP_VERSION = "1.0.0";
   /* 효과음 (작게) */
   var actx = null;
   J.sfx = function (kind) {
+    if (!J.settings.sfxVolume) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       var notes = { ok: [660, 880], no: [300, 220], flip: [520], win: [523, 659, 784, 1046] }[kind] || [440];
@@ -79,7 +80,7 @@ var APP_VERSION = "1.0.0";
         o.frequency.value = f;
         var t0 = actx.currentTime + i * 0.09;
         g.gain.setValueAtTime(0.0001, t0);
-        g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.2 * J.settings.sfxVolume), t0 + 0.02);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
         o.connect(g).connect(actx.destination);
         o.start(t0); o.stop(t0 + 0.2);
@@ -106,6 +107,104 @@ var APP_VERSION = "1.0.0";
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
   };
   J.stamps = function (weekId) { return load()[weekId] || {}; };
+
+
+  /* ───────── 설정 (이 기기에만 저장) ───────── */
+  var SKEY = "jindam_hanja_settings_v1";
+  J.settings = { ttsVolume: 1, ttsRate: 0.85, sfxVolume: 0.6 };
+  try { Object.assign(J.settings, JSON.parse(localStorage.getItem(SKEY)) || {}); } catch (e) {}
+  function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(J.settings)); } catch (e) {} }
+
+  /* 팝업 */
+  J.modal = function (html, opts) {
+    opts = opts || {};
+    var wrap = J.h('<div class="modal" role="dialog" aria-modal="true"><div class="modal__box">' +
+      (opts.noClose ? "" : '<button class="modal__x" type="button" aria-label="닫기">×</button>') + html + "</div></div>");
+    document.body.appendChild(wrap);
+    var close = function () { wrap.classList.add("out"); setTimeout(function () { wrap.remove(); if (opts.onClose) opts.onClose(); }, 180); };
+    var x = J.$(".modal__x", wrap); if (x) x.addEventListener("click", close);
+    if (!opts.noClose) wrap.addEventListener("click", function (e) { if (e.target === wrap) close(); });
+    wrap.close = close;
+    return wrap;
+  };
+
+  J.openSettings = function () {
+    var pct = function (v) { return Math.round(v * 100); };
+    var m = J.modal(
+      '<h3 class="modal__title">⚙️ 설정</h3>' +
+      '<label class="set"><span class="set__name">🔊 중국어 음성 크기 <b data-v="ttsVolume"></b></span>' +
+        '<input type="range" min="0" max="1" step="0.1" data-k="ttsVolume"></label>' +
+      '<label class="set"><span class="set__name">🐢 말하기 빠르기 <b data-v="ttsRate"></b></span>' +
+        '<input type="range" min="0.5" max="1.2" step="0.05" data-k="ttsRate">' +
+        '<span class="set__ends"><span>천천히</span><span>보통</span><span>빠르게</span></span></label>' +
+      '<label class="set"><span class="set__name">🎵 효과음 크기 <b data-v="sfxVolume"></b></span>' +
+        '<input type="range" min="0" max="1" step="0.1" data-k="sfxVolume"></label>' +
+      '<div class="row row--center"><button class="btn btn--sun btn--sm" data-test>🔊 들어 보기 · 学生</button></div>' +
+      '<div class="set__voice muted"></div>' +
+      '<div class="row row--center"><button class="btn btn--sm" data-guide>안내 다시 보기</button><button class="btn btn--sm" data-reset>처음 값으로</button></div>' +
+      '<div class="set__ver muted">진담 한자어 놀이터 v' + APP_VERSION + "</div>");
+    function paint() {
+      J.$$("[data-k]", m).forEach(function (r) { r.value = J.settings[r.dataset.k]; });
+      J.$$("[data-v]", m).forEach(function (b) {
+        var k = b.dataset.v, v = J.settings[k];
+        b.textContent = k === "ttsRate" ? (v <= 0.7 ? "천천히" : v >= 1 ? "빠르게" : "보통") + " ×" + v.toFixed(2) : (v ? pct(v) + "%" : "끔");
+      });
+      var name = window.JTTS && JTTS.voiceName();
+      J.$(".set__voice", m).textContent = name ? "지금 쓰는 중국어 목소리: " + name : "이 기기에서 중국어 목소리를 찾지 못했어요. Chrome에서 열어 주세요.";
+    }
+    J.$$("[data-k]", m).forEach(function (r) {
+      r.addEventListener("input", function () { J.settings[r.dataset.k] = parseFloat(r.value); saveSettings(); paint(); });
+      r.addEventListener("change", function () { if (r.dataset.k === "sfxVolume") J.sfx("ok"); });
+    });
+    J.$("[data-test]", m).addEventListener("click", function () { JTTS.speak("学生"); });
+    J.$("[data-reset]", m).addEventListener("click", function () { J.settings.ttsVolume = 1; J.settings.ttsRate = 0.85; J.settings.sfxVolume = 0.6; saveSettings(); paint(); });
+    J.$("[data-guide]", m).addEventListener("click", function () { m.close(); setTimeout(function () { J.showGuide(); }, 200); });
+    paint();
+  };
+
+  /* 인트로 → 안내 → 로비 */
+  J.showIntro = function (then) {
+    var w = J.week;
+    var intro = J.h('<div class="intro">' +
+      '<div class="intro__bubbles"><i></i><i></i><i></i><i></i></div>' +
+      '<img class="intro__logo" src="assets/icon-512.png" alt="">' +
+      '<div class="intro__brand">진담중국어</div>' +
+      '<h1 class="intro__title">한자어 놀이터</h1>' +
+      '<p class="intro__sub">뜻을 알면 교과서가 <em>쉬워져요</em></p>' +
+      '<div class="intro__chars"><span>學</span><span>生</span><span>分</span><span>光</span></div>' +
+      '<div class="intro__tap">👆 화면을 터치해 주세요</div>' +
+      '<div class="intro__copy">© ' + Math.max(2026, new Date().getFullYear()) + " 진담중국어(전진아). All rights reserved. · v" + APP_VERSION + "</div>" +
+    "</div>");
+    document.body.appendChild(intro);
+    var started = false;
+    function go() {
+      if (started) return; started = true;
+      if (window.JTTS) JTTS.unlock();
+      J.sfx("win");
+      intro.classList.add("out");
+      setTimeout(function () { intro.remove(); J.showGuide(then); }, 350);
+    }
+    intro.addEventListener("pointerup", go);
+    intro.addEventListener("keydown", go);
+    document.addEventListener("keydown", function k(e) { if (e.key === "Enter" || e.key === " ") { document.removeEventListener("keydown", k); go(); } });
+  };
+
+  J.showGuide = function (then) {
+    var w = J.week;
+    var m = J.modal(
+      '<div class="guide__badge">' + (w ? w.no + "주차 · " + J.esc(w.title) : "안내") + "</div>" +
+      '<h3 class="modal__title">이렇게 놀아요!</h3>' +
+      '<ol class="guide">' +
+        '<li><span class="guide__n c-sun">一</span><div><b>한자어 카드</b>로 먼저 보기<br><small>글자를 쪼개면 뜻이 보여요</small></div></li>' +
+        '<li><span class="guide__n c-pink">二</span><div><b>따라 쓰기 · 놀이</b>로 여러 번 만나기<br><small>한 글자를 3번씩 써 봐요</small></div></li>' +
+        '<li><span class="guide__n c-mint">三</span><div>틀려도 괜찮아요!<br><small>틀린 낱말은 다시 나와서 끝까지 익혀요</small></div></li>' +
+      "</ol>" +
+      '<div class="guide__tips"><span>🔊 소리를 켜 주세요</span><span>⚙️ 설정에서 음성 크기 조절</span><span>🏅 놀이를 끝내면 도장!</span></div>' +
+      '<div class="guide__promo">한자어로 넓히는 어휘력, 중국어로 여는 소통과 기회<br><b>&lt;한자어로 시작하는 중국어 과정&gt; 모집</b> · 카톡 jindam1799</div>' +
+      '<button class="btn btn--red guide__go" type="button">시작하기 ▶</button>',
+      { noClose: true, onClose: then });
+    J.$(".guide__go", m).addEventListener("click", function () { J.sfx("flip"); m.close(); });
+  };
 
   /* ───────── 주차 ───────── */
   J.week = null;
@@ -232,13 +331,15 @@ var APP_VERSION = "1.0.0";
     J.$$(".js-version").forEach(function (e) { e.textContent = "v" + APP_VERSION; });
     J.$$(".js-year").forEach(function (e) { e.textContent = Math.max(2026, new Date().getFullYear()); });
     back.addEventListener("click", function () { J.go("home"); });
+    J.$(".topbar__gear").addEventListener("click", function () { J.sfx("flip"); J.openSettings(); });
     bindKakao(J.$(".footer"));
     var files = window.JINDAM_WEEK_FILES || [];
     files.reduce(function (p, f) { return p.then(function () { return loadScript("data/" + f + ".js"); }); }, Promise.resolve()).then(function () {
       if (!J.weeks.length) { stage.innerHTML = '<p class="card">이번 주 자료를 불러오지 못했어요. 새로고침해 주세요.</p>'; return; }
       J.setWeek(null); // 늘 가장 최근 주차로 시작
       var start = location.hash.replace("#", "");
-      J.go(J.screens[start] ? start : "home");
+      J.go("home");
+      J.showIntro(function () { if (J.screens[start]) J.go(start); });
     });
   };
 })();

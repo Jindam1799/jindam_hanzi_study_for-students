@@ -48,8 +48,11 @@
       var v = chosen || pickVoice();
       if (v) u.voice = v;
       u.lang = v ? v.lang : "zh-CN";
-      u.rate = opts.rate || 0.85;
+      var st = (window.JINDAM && JINDAM.settings) || {};
+      u.rate = opts.rate || st.ttsRate || 0.85;
+      u.volume = st.ttsVolume == null ? 1 : st.ttsVolume;
       u.pitch = 1;
+      if (u.volume <= 0) { resolve(false); return; }
       var started = false, finished = false;
       u.onstart = function () { started = true; note("start: " + text); };
       u.onend = function () { finished = true; resolve(true); };
@@ -67,7 +70,15 @@
     });
   }
 
+  // 첫 터치 때 음성 엔진 깨우기 (iPhone·Chrome은 사용자 터치 뒤에만 소리가 남)
+  function unlock() {
+    if (!synth) return;
+    try { var u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch (e) {}
+    pickVoice();
+  }
+
   window.JTTS = {
+    unlock: unlock,
     speak: speak,
     available: function () { return !!synth; },
     voiceName: function () { var v = chosen || pickVoice(); return v ? v.name : null; }
