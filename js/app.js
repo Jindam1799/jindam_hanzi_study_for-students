@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.7.1";
+var APP_VERSION = "1.7.2";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -497,7 +497,7 @@ var APP_VERSION = "1.7.1";
     var m = J.modal(
       '<h3 class="modal__title">📞 전화 문의</h3>' +
       '<div class="phone-num">' + pretty + "</div>" +
-      '<div class="muted" style="text-align:center;font-size:14px">진담중국어 · &lt;한자어로 시작하는 중국어 과정&gt;</div>' +
+      '<div class="phone-who">진담중국어 전진아 선생님</div>' +
       '<a class="btn btn--red guide__go" href="tel:' + n + '">전화 걸기</a>' +
       '<button class="btn" type="button" data-copy>번호 복사</button>');
     J.$("[data-copy]", m).addEventListener("click", function () {

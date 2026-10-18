@@ -688,3 +688,4 @@ a.btn { text-decoration: none; }
 
 .notice-pop__one { white-space: nowrap; font-size: clamp(16px, 4.7vw, 23px); letter-spacing: -.02em; }
 .contact__btns .phone-btn, .contact__btns .kakao-btn { white-space: nowrap; font-size: clamp(14px, 4.2vw, 17px); padding: 10px 6px; }
+.phone-who { text-align: center; font-family: var(--font-fun); font-size: 18px; color: var(--ink); }
