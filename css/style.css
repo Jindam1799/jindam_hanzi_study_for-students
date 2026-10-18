@@ -629,3 +629,8 @@ a.kakao-btn { text-decoration: none; }
 .phone-num { text-align: center; font-family: var(--font-fun); font-size: 34px; color: var(--red); letter-spacing: .02em; }
 a.btn { text-decoration: none; }
 @media (max-width: 420px) { .footer__slogan { display: none; } }
+
+/* 문의처: 전화 문의 · 카톡 문의 */
+.contact { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 4px; }
+.contact__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.contact__btns .phone-btn, .contact__btns .kakao-btn { justify-content: center; font-size: 17px; padding: 10px 12px; border-radius: 14px; }
