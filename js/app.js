@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.4.0";
+var APP_VERSION = "1.4.1";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -329,8 +329,7 @@ var APP_VERSION = "1.4.0";
         '<span class="next-card__q">' + J.esc(next.hint) + "</span>" +
         '<span class="next-card__body"><b>다음 주 예고 · ' + next.no + "주차</b>" +
         "<span>" + J.esc(next.title) + (next.teaser ? " — " + J.esc(next.teaser) : "") + "</span>" +
-        '<span class="next-card__d">' + J.esc(next.label) + "</span></span></button>" +
-      J.promoHTML();
+        '<span class="next-card__d">' + J.esc(next.label) + "</span></span></button>";
     J.$$("[data-week]", root).forEach(function (b) {
       b.addEventListener("click", function () {
         if (b.dataset.week === J.week.id) return;
