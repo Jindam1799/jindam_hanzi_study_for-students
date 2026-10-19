@@ -2,7 +2,7 @@
  * 진담 한자어 놀이터 — 기본 틀
  * 배포할 때마다 APP_VERSION 을 올리면 화면 아래 번호로 최신 반영 여부를 확인할 수 있어요.
  */
-var APP_VERSION = "1.7.3";
+var APP_VERSION = "1.7.4";
 
 (function () {
   var J = (window.JINDAM = window.JINDAM || {});
@@ -10,7 +10,7 @@ var APP_VERSION = "1.7.3";
   J.KAKAO_LINK = "http://pf.kakao.com/_jZYxmxj"; // 카카오톡 채널 채팅 바로가기
   J.PHONE = "01031917524"; // 전화 문의
   J.APPLY_LINK = "https://forms.gle/VijaeRaxiKkiCoRp7"; // 상담신청 (구글폼)
-  J.APPLY_BTN = '<a class="apply-btn" href="' + J.APPLY_LINK + '" target="_blank" rel="noopener">✍️ 상담신청</a>';
+  J.APPLY_BTN = '<a class="apply-btn" href="' + J.APPLY_LINK + '" target="_blank" rel="noopener">👀 알아보러가기</a>';
   J.REVIEW_LINK = "https://litt.ly/quanlaoshi1799"; // 후기 보러가기
   J.PHONE_BTN = '<button class="phone-btn" type="button" data-phone>📞 전화 문의</button>';
   J.KAKAO_CHAT = '<a class="kakao-btn kakao-btn--chat" href="http://pf.kakao.com/_jZYxmxj" target="_blank" rel="noopener">💬 카톡 채팅 바로가기</a>';
